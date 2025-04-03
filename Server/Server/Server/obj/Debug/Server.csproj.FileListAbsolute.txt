@@ -39,3 +39,8 @@ C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное п�
 C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\System.Text.Encodings.Web.xml
 C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\System.Text.Json.xml
 C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\System.ValueTuple.xml
+C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\Serilog.Sinks.ColoredConsole.dll
+C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\Serilog.Sinks.Console.dll
+C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\Serilog.Sinks.File.dll
+C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\Serilog.Sinks.Console.xml
+C:\Users\HP\OneDrive\Рабочий стол\Клиент серверное приложение на С#\Server\Server\Server\bin\Debug\Serilog.Sinks.File.xml

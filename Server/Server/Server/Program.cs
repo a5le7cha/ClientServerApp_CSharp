@@ -16,7 +16,7 @@ namespace Server
 
         static async Task Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().CreateLogger();
+            Log.Logger = new LoggerConfiguration().WriteTo.File("logs.txt").WriteTo.Console().CreateLogger();
 
             TcpListener listener = new TcpListener(IPAddress.Parse("127.0.0.1"), _port);
 
@@ -24,29 +24,39 @@ namespace Server
             {
                 string connectionString = read.ReadLine();
 
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    Log.Error("Строка соединения пустая!");
+                    Environment.Exit(1);
+                }
+
                 dbService = new DataBaseService(connectionString);
             }
 
             try
             {
-                Console.WriteLine("Инициализация базы данных...");
                 Log.Information("Инициализация базы данных...");
 
-                await dbService.InitializeAsync();
+                try
+                {
+                    await dbService.InitializeAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Ошибка DB: {ex.Message}");
+                    throw;
+                }
 
-                Console.WriteLine("База данных инициализирована успешно!");
                 Log.Information("База данных инициализирована успешно!");
 
                 listener.Start();
 
                 Log.Information("Сервер запущен и ожидает подключение...");
-                Console.WriteLine("Сервер запущен и ожидает подключение...");
 
                 while (true)
                 {
                     TcpClient client = await listener.AcceptTcpClientAsync();
 
-                    Console.WriteLine("Клиент подключен!");
                     Log.Information("Клиент подключен!");
 
                     _ = HandleClientAsync(client);
@@ -60,10 +70,18 @@ namespace Server
             {
                 listener.Stop();
             }
+
+            Console.ReadKey();
         }
 
         static async Task HandleClientAsync(TcpClient client)
         {
+            if (dbService == null)
+            {
+                Log.Error("Сервис базы данных не инициализирован!");
+                return;
+            }
+
             try
             {
                 using (NetworkStream stream = client.GetStream())
@@ -82,7 +100,7 @@ namespace Server
                         byte[] response = new byte[1024];
                         int sum = 0;
 
-                        if (line[0] != "add" || line[0] != "GetAll")
+                        if (line[0] == "add" || line[0] == "getall")
                         {
                             Log.Information("Данные пришли корректные.");
 
@@ -92,18 +110,18 @@ namespace Server
 
                                 Item item = new Item()
                                 {
-                                    Command = line[1],
+                                    Command = line[0],
                                     Result = sum,
                                     DateOfTime = DateTime.Now
                                 };
 
                                 await dbService.AddItemAsync(item);
 
-                                response = Encoding.UTF8.GetBytes($"Status: Ok, Result: {item.ToString()}");
+                                response = Encoding.UTF8.GetBytes($"Status: Ok, Response: {item.ToString()}");
                             }
-                            else if(line[0] == "GetAll")
+                            else if(line[0] == "getall")
                             {
-                                List<Item> items = (List<Item>)await dbService.GetAllItemsAsync();
+                                var items = await dbService.GetAllItemsAsync();
 
                                 response = ConvertUsersToByteArray(items);
                             }
@@ -130,12 +148,12 @@ namespace Server
             }
         }
 
-        static byte[] ConvertUsersToByteArray(List<Item> items)
+        static byte[] ConvertUsersToByteArray(IEnumerable<Item> items)
         {
             StringBuilder sb = new StringBuilder();
             foreach (var item in items)
             {
-                sb.AppendLine($"{item.Id},{item.Command},{item.Result},{item.DateOfTime}");
+                sb.AppendLine($"Id={item.Id}, Command={item.Command}, Result={item.Result}, DateOfTime={item.DateOfTime}");
             }
             return Encoding.UTF8.GetBytes(sb.ToString());
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
-using System.Runtime.InteropServices;
 
 namespace Server
 {
@@ -36,8 +35,8 @@ namespace Server
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 var dbExists = await connection.QueryFirstOrDefaultAsync<int>(
-                    "SELECT 1 FROM pg_database WHERE dataname = @Database",
-                    new { databaseName = _databaseName.ToLower() });
+                    $"SELECT 1 FROM pg_database WHERE datname = {_databaseName}",
+                    new { databaseName = _databaseName });
 
                 return dbExists == 1;
             }
@@ -62,7 +61,7 @@ namespace Server
             {
                 await connection.OpenAsync();
                 var tableExists = connection.QueryFirstOrDefaultAsync<int>(
-                    "SELECT 1 FROM information_schema.tables WHERE table_name = @tableName",
+                    "SELECT 1 FROM information_schema.tables WHERE table_name = @_tableName",
                     new { tableName = _tableName.ToLower() });
 
                 await connection.CloseAsync();
@@ -98,7 +97,7 @@ namespace Server
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                List<Item> listItem = (List<Item>)await connection.QueryAsync<Item>($"SELECT (Id, Command, Result, DateOfTime) FROM {_tableName}");
+                var listItem = await connection.QueryAsync<Item>($"SELECT Id, Command, Result, DateOfTime FROM {_tableName}");
 
                 await connection.CloseAsync();
 
@@ -113,7 +112,7 @@ namespace Server
                 await connection.OpenAsync();
                 
                 var item = await connection.QueryFirstOrDefaultAsync<Item>(
-                    $"SELECT (Id, Command, Result, DateOfTime) FROM {_tableName} WHERE Id = @Id",
+                    $"SELECT Id, Command, Result, DateOfTime FROM {_tableName} WHERE Id = @Id",
                     new { Id = id });
 
                 await connection.CloseAsync();
@@ -149,8 +148,8 @@ namespace Server
 
                 var sql = $@"
                 UPDATE {_tableName}
-                SET name = @Name, description = @Description
-                WHERE id = @Id";
+                SET Command = @Command, Result = @Result, DateOfTime = @DateOfTime
+                WHERE Id = @Id";
 
                 var RowsAffected = await connection.ExecuteAsync(sql, item);
 

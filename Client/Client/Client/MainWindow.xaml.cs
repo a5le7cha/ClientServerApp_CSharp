@@ -68,8 +68,8 @@ namespace Client
                     while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) != 0)
                     {
                         string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        Log.Information($"Получено: {receivedData}");
-                        outputBox.Text += $"Получено: {receivedData} \t DateTime: {DateTime.Now} \n";
+                        Log.Information($"Получено: \n\t{receivedData}");
+                        outputBox.Text += $"Получено: \n\t{receivedData}";
                     }
                 }
             }
